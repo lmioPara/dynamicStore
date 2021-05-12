@@ -4,7 +4,7 @@
 使用方法
 
 ```javascript
-import DynamicStore from 'dynamicStore';
+import DynamicStore from '@lmio/dynamic-store';
 import Vue from 'vue';
 import Vuex from 'vuex';
 Vue.use(Vuex);

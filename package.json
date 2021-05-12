@@ -1,11 +1,11 @@
 {
-  "name": "dynamicstore",
+  "name": "@lmio/dynamic-store",
   "version": "1.0.0",
   "main": "dist/dynamicStore.js",
   "scripts": {
     "build": "webpack"
   },
-  "author": "lmiopara",
+  "author": "lmio",
   "license": "ISC",
   "repository": {
     "type": "git",
