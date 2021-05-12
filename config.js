@@ -1,7 +1,7 @@
 export default {
   treeDelimiter: '$',
   setDeep: true,
-  debugger: true,
+  debugger: false,
   arrayConversion: false,
   userExternalObject: false,
   mutationController: ['set'],

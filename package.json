@@ -1,11 +1,21 @@
 {
   "name": "dynamicstore",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "main": "dist/dynamicStore.js",
   "scripts": {
     "build": "webpack"
   },
   "author": "lmiopara",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lmioPara/dynamicStore.git"
+  },
+  "bugs": {
+    "url": "https://github.com/lmioPara/dynamicStore/issues"
+  },
+  "homepage": "https://github.com/lmioPara/dynamicStore#readme",
+  "description": "",
+  "dependencies": {},
+  "devDependencies": {}
 }

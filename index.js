@@ -6,7 +6,6 @@ import ExternalObject from "./external/ExternalObject";
 
 
 import config from './config';
-import {cloneDeep} from 'lodash';
 import curryingMutationControllers from "./controller/mutations";
 import curryingActionControllers from "./controller/actions";
 
@@ -24,7 +23,7 @@ class DynamicStore {
       if (key.indexOf(this.config.treeDelimiter) >= 0) {
         throw new Error(`state中不能使用 [${this.config.treeDelimiter}] 连接符  问题key: [${key}] 前缀: [${perFix}]`);
       }
-      let thisObj = cloneDeep(state[key]);
+      let thisObj = JSON.parse(JSON.stringify(state[key]));
       let dyKey = `${perFix}${key}`;
       if (Object.prototype.toString.call(thisObj) === '[object Object]') {
         localState[dyKey] = thisObj;
@@ -63,9 +62,10 @@ class DynamicStore {
     let dyKeys = this.state;
     let getters = {};
     let keyMaps = Object.keys(dyKeys);
+    let config = this.config;
     keyMaps.map(dk => {
-      getters[dk] = (state, getters, rootState) => {
-        if (this.config.debugger) {
+      getters[dk] = function (state, getters, rootState) {
+        if (config.debugger) {
           console.log(`[DS getters] ${dk}`);
         }
         return state[dk];
