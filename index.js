@@ -2,12 +2,12 @@
  * 动态生成mutation与getter的策略
  */
 
-import ExternalObject from "./external/ExternalObject";
-
+// import ExternalObject from "./external/ExternalObject";
 
 import config from './config';
 import curryingMutationControllers from "./controller/mutations";
 import curryingActionControllers from "./controller/actions";
+import curryingGettersControllers from "./controller/getters";
 
 class DynamicStore {
   constructor(state, options) {
@@ -20,19 +20,35 @@ class DynamicStore {
     let stateKeys = Object.keys(state);
     let localState = {};
     stateKeys.map(key => {
-      if (key.indexOf(this.config.treeDelimiter) >= 0) {
+      // 开启链式转换并且key中出现关键字
+      if (this.config.chainConversion && key.indexOf(this.config.treeDelimiter) >= 0) {
         throw new Error(`state中不能使用 [${this.config.treeDelimiter}] 连接符  问题key: [${key}] 前缀: [${perFix}]`);
       }
-      let thisObj = JSON.parse(JSON.stringify(state[key]));
+      // 组合dsKey
       let dyKey = `${perFix}${key}`;
+
+      // 获取当前值
+      let thisObj;
+      // 如果开启了store持久化
+      if(this.config.persistence) {
+        thisObj = this.initStorageValue(dyKey, state[key]);
+      } else {
+        thisObj = JSON.parse(JSON.stringify(state[key]));
+      }
+
       if (Object.prototype.toString.call(thisObj) === '[object Object]') {
         localState[dyKey] = thisObj;
-        let tempValue = this.conversion(thisObj, `${dyKey}${this.config.treeDelimiter}`);
-        Object.assign(localState, tempValue);
+        // 是否开启连锁转换
+        if (this.config.chainConversion) {
+          let tempValue = this.conversion(thisObj, `${dyKey}${this.config.treeDelimiter}`);
+          Object.assign(localState, tempValue);
+        }
       } else if (Object.prototype.toString.call(thisObj) === '[object Array]' && this.config.arrayConversion) {
         localState[dyKey] = thisObj;
-        let tempValue = this.conversion(thisObj, `${dyKey}${this.config.treeDelimiter}`);
-        Object.assign(localState, tempValue);
+        if (this.config.chainConversion) {
+          let tempValue = this.conversion(thisObj, `${dyKey}${this.config.treeDelimiter}`);
+          Object.assign(localState, tempValue);
+        }
       } else {
         localState[dyKey] = thisObj;
       }
@@ -41,10 +57,8 @@ class DynamicStore {
   }
 
   getMutations() {
-    let dyKeys = this.state;
     let mutations = {};
-    let keyMaps = Object.keys(dyKeys);
-    keyMaps.map(dk => {
+    Object.keys(this.state).map(dk => {
       // 默认控制器为set控制器
       mutations[dk] = curryingMutationControllers(dk).bind(this);
       this.config.mutationController.map(controller => {
@@ -59,17 +73,9 @@ class DynamicStore {
   }
 
   getGetters() {
-    let dyKeys = this.state;
     let getters = {};
-    let keyMaps = Object.keys(dyKeys);
-    let config = this.config;
-    keyMaps.map(dk => {
-      getters[dk] = function (state, getters, rootState) {
-        if (config.debugger) {
-          console.log(`[DS getters] ${dk}`);
-        }
-        return state[dk];
-      };
+    Object.keys(this.state).map(dk => {
+      getters[dk] = curryingGettersControllers(dk).bind(this);
     })
     return getters;
   }
@@ -80,14 +86,35 @@ class DynamicStore {
 
   getActions() {
     if (this.config.actions) {
-      let baseActions = this.config.actions;
       let actions = {};
-      Object.keys(baseActions).map(action => {
+      Object.keys(this.config.actions).map(action => {
         actions[action] = curryingActionControllers(action).bind(this);
       })
       return actions;
     } else {
       return {};
+    }
+  }
+
+  initStorageValue(key, defVal) {
+    if (this.config.persistence) {
+      let storageKey = `${this.config.persistenceStoragePrefix}${key}`;
+      let result;
+      switch (this.config.persistenceStorage) {
+        case "localStorage":
+          result = localStorage.getItem(storageKey);
+          break;
+        case "sessionStorage":
+          result = sessionStorage.getItem(storageKey);
+          break;
+        default:
+          throw new Error(`[DS persistence error] 未设置持久化类型`)
+      }
+      if(result) {
+        return JSON.parse(result);
+      } else {
+        return defVal;
+      }
     }
   }
 
