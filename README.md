@@ -1,4 +1,5 @@
 # dynamicStore
+
 > 根据state的结构自动化生成getters mutations
 
 使用方法

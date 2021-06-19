@@ -10,5 +10,8 @@ export default {
   snapShot: 3000,
   persistence: false,
   persistenceStorage: 'localStorage', // 枚举值 'sessionStorage'
-  persistenceStoragePrefix: 'ds_'
+  persistenceStoragePrefix: 'ds_',
+  dynamicUrl: false,
+  dynamicUrlPrefix: 'du_',
+  getterController: ['get'],
 }

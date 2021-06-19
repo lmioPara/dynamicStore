@@ -17,7 +17,6 @@ class ExternalObject {
 
 const handler = {
   get: function (target, property) {
-    console.log(property);
     return target.getValue(property);
   },
   set: function (target, property, value) {

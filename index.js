@@ -9,10 +9,23 @@ import curryingMutationControllers from "./controller/mutations";
 import curryingActionControllers from "./controller/actions";
 import curryingGettersControllers from "./controller/getters";
 
+import decorator from './decorator';
+
 class DynamicStore {
+  // 静态属性
+  static DSDecorator = (target, name, descriptor, decorator) => {
+    console.log('[DS decorator]', target, name, descriptor, decorator);
+    return target;
+  };
   constructor(state, options) {
     this.state = state;
     this.config = {...config, ...options};
+
+    if(this.config.dynamicUrl) {
+      let url = new URL(window.location.href);
+      console.log(url);
+    }
+
     this.state = this.conversion(this.state);
   }
 
@@ -29,7 +42,8 @@ class DynamicStore {
 
       // 获取当前值
       let thisObj;
-      // 如果开启了store持久化
+
+        // 如果开启了store持久化
       if(this.config.persistence) {
         thisObj = this.initStorageValue(dyKey, state[key]);
       } else {
@@ -76,6 +90,13 @@ class DynamicStore {
     let getters = {};
     Object.keys(this.state).map(dk => {
       getters[dk] = curryingGettersControllers(dk).bind(this);
+      this.config.getterController.map(controller => {
+        // 排除默认控制器
+        if (controller === 'get') {
+          return;
+        }
+        getters[`${dk}${this.config.controllerDecorator}${controller}`] = curryingGettersControllers(dk, controller).bind(this);
+      })
     })
     return getters;
   }

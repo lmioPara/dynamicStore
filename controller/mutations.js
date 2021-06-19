@@ -28,7 +28,9 @@ const controllers = {
   persistence: {
     fn: (state, key, payload, config) => {
       controllers.set.fn(state, key, payload, config);
-      console.log('[DS persistence] 持久化数据');
+      if (config.debugger) {
+        console.log('[DS persistence] 持久化数据');
+      }
       // 是否开启持久化
       if (config.persistence) {
         let storageKey = `${config.persistenceStoragePrefix}${key}`;
@@ -44,7 +46,7 @@ const controllers = {
         }
       }
     }
-  }
+  },
 }
 
 const curryingMutationControllers = (key, action = 'set') => {
